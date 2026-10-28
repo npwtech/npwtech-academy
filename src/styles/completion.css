@@ -1,0 +1,223 @@
+.done-hero {
+  position: relative;
+  background-color: var(--bg);
+  border-bottom: 1px solid var(--line);
+  overflow: hidden;
+}
+.done-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(100% 90% at 25% 40%, transparent 30%, var(--bg) 85%);
+}
+.done-hero__grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 32px;
+  padding-block: 48px 64px;
+}
+@media (min-width: 900px) {
+  .done-hero__grid {
+    grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.2fr);
+    align-items: center;
+    gap: 56px;
+    padding-block: 72px 88px;
+  }
+}
+.done-hero__robot {
+  display: grid;
+  place-items: center;
+}
+.done-hero__copy {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+.done-hero__copy h1 {
+  font-size: var(--step-5);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+}
+.done-hero__lead {
+  color: var(--fg-2);
+  max-width: 58ch;
+  font-size: 1.0625rem;
+}
+.done-missing {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.done-missing a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--card);
+  text-decoration: none;
+  font-weight: 500;
+}
+.done-missing a:hover {
+  background: var(--surface-2);
+}
+.done-missing svg {
+  width: 16px;
+  height: 16px;
+  margin-left: auto;
+  flex: none;
+}
+
+.done-scores {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  max-width: 520px;
+}
+@media (min-width: 560px) {
+  .done-scores {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+.done-score {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border-radius: var(--r-sm);
+  border: 1px dashed var(--line-field);
+  font-variant-numeric: tabular-nums;
+}
+.done-score strong {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+.done-score[data-done] {
+  border-style: solid;
+  background: var(--card);
+}
+
+.done-plan {
+  display: grid;
+  gap: 10px;
+  padding: 18px 20px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  background: var(--glass);
+  max-width: 560px;
+}
+.done-plan ol {
+  margin: 0;
+  padding-left: 1.2em;
+  display: grid;
+  gap: 6px;
+}
+.done-plan li[data-top] {
+  font-weight: 500;
+}
+.done-plan__badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  background: var(--white);
+  color: var(--on-light);
+  font-size: 0.6875rem;
+  vertical-align: 2px;
+}
+
+/* Chamada comercial (seção clara) */
+.cta {
+  padding-block: 72px 88px;
+}
+.cta__grid {
+  display: grid;
+  gap: 32px;
+}
+@media (min-width: 900px) {
+  .cta__grid {
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 64px;
+    align-items: start;
+  }
+}
+.cta__brand img {
+  width: 150px;
+  height: auto;
+}
+@media (min-width: 900px) {
+  .cta__brand {
+    padding-top: 36px;
+    border-right: 1px solid rgba(15, 15, 17, 0.12);
+    min-height: 100%;
+  }
+  .cta__brand img {
+    width: 180px;
+  }
+}
+.cta__copy {
+  display: grid;
+  gap: 16px;
+  max-width: 680px;
+}
+.cta__copy h2 {
+  font-size: var(--step-4);
+  letter-spacing: -0.04em;
+}
+.cta__copy > p:not(.tag) {
+  color: var(--on-light-2);
+  font-size: 1.0625rem;
+}
+.cta__copy .cta__signature {
+  color: var(--on-light);
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.cta__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+.cta__contacts {
+  margin: 12px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid rgba(15, 15, 17, 0.12);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 40px;
+}
+.cta__contacts dd {
+  margin: 4px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+  user-select: all;
+}
+.cta__copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid rgba(15, 15, 17, 0.2);
+  background: transparent;
+  color: var(--on-light);
+  font-size: 0.75rem;
+  user-select: none;
+}
+.cta__copy-btn svg {
+  width: 13px;
+  height: 13px;
+}
+.cta__copy-btn:hover {
+  background: rgba(15, 15, 17, 0.06);
+}
