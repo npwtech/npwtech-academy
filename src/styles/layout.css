@@ -1,0 +1,167 @@
+/* Cabeçalho */
+.app-header {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 50;
+  background: rgba(6, 6, 7, 0.78);
+  backdrop-filter: blur(14px) saturate(120%);
+  -webkit-backdrop-filter: blur(14px) saturate(120%);
+  border-bottom: 1px solid var(--line);
+}
+.app-header__inner {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  height: var(--header-h);
+  max-width: 1440px;
+  margin-inline: auto;
+  padding-left: var(--gutter-l);
+  padding-right: var(--gutter-r);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  border-radius: var(--r-sm);
+  flex: none;
+}
+/* O símbolo original é grafite: fica sobre uma placa clara para manter a leitura no cabeçalho escuro */
+.brand__mark {
+  width: 36px;
+  height: 36px;
+  padding: 5px 6px;
+  border-radius: 10px;
+  background: var(--white);
+  object-fit: contain;
+}
+.brand__text {
+  display: grid;
+  line-height: 1;
+  gap: 3px;
+}
+.brand__name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.0625rem;
+  letter-spacing: -0.02em;
+}
+.brand__sub {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+
+.app-header__course {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  padding-left: 24px;
+  border-left: 1px solid var(--line);
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 0.9375rem;
+  min-width: 0;
+}
+.app-header__course span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (min-width: 860px) {
+  .app-header__course {
+    display: inline-flex;
+  }
+}
+
+.app-header__nav {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.app-header__nav a {
+  padding: 10px 12px;
+  border-radius: var(--r-pill);
+  text-decoration: none;
+  color: var(--fg-2);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  transition:
+    color var(--t-fast) var(--ease),
+    background-color var(--t-fast) var(--ease);
+}
+.app-header__nav a:hover {
+  color: var(--fg);
+  background: var(--surface-2);
+}
+.app-header__nav a[aria-current='page'] {
+  color: var(--fg);
+}
+.app-header__nav .icon-btn {
+  margin-left: 6px;
+}
+@media (max-width: 420px) {
+  .app-header__nav a[href='#inicio'] {
+    display: none;
+  }
+}
+
+/* Rodapé */
+.site-footer {
+  border-top: 1px solid var(--line);
+  background: var(--black);
+  padding-block: 48px calc(40px + env(safe-area-inset-bottom, 0px));
+}
+.site-footer__inner {
+  display: grid;
+  gap: 32px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 820px) {
+  .site-footer__inner {
+    grid-template-columns: 1.2fr 1fr 1.2fr;
+    align-items: start;
+  }
+}
+.site-footer__brand {
+  display: grid;
+  gap: 14px;
+  color: var(--fg-2);
+  font-size: 0.9375rem;
+}
+.site-footer__contacts {
+  margin: 0;
+  display: grid;
+  gap: 16px;
+}
+.site-footer__contacts dd {
+  margin: 4px 0 0;
+}
+.site-footer__contacts a {
+  text-decoration: none;
+  font-weight: 500;
+  user-select: all;
+}
+.site-footer__contacts a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.site-footer__note {
+  color: var(--fg-2);
+  font-size: 0.875rem;
+  max-width: 40ch;
+}
+
+/* Seção clara reutilizável */
+.light-band {
+  background: var(--white);
+  color: var(--on-light);
+  --fg-2: var(--on-light-2);
+}
+.light-band :focus-visible {
+  outline-color: var(--on-light);
+}
