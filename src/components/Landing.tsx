@@ -1,194 +1,366 @@
-import { ArrowRight, Headphones, ListChecks, Pause, Play, PenLine } from 'lucide-react';
-import { useEffect } from 'react';
-import { COURSE, MODULES, OPENING_SCRIPT, TOTAL_MINUTES, toSentences } from '../data/course';
-import { ASSETS } from '../assets';
-import { useSpeech } from '../state/speech';
-import { useProgress } from '../state/progress';
-import { RobotPresenter, type RobotState } from './RobotPresenter';
+import {
+  ArrowDown,
+  ArrowRight,
+  BookOpenCheck,
+  CircleCheck,
+  ClipboardCheck,
+  Eye,
+  LockKeyhole,
+  MousePointerClick,
+  NotebookPen,
+  Plus,
+  Search,
+  ShieldCheck,
+  Smartphone,
+  Sparkles,
+  Zap,
+} from 'lucide-react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { EBOOK, FAQ, INSIDE, TOC, TOTAL_MINUTES } from '../data/ebook';
+import { useInView, useReveal, useScrollProgress } from '../hooks/useScroll';
+import { useOwnership } from '../state/library';
+import { go } from '../state/router';
+import { CheckoutDialog } from './CheckoutDialog';
+import { EbookCover } from './EbookCover';
+import { PagePreview } from './PagePreview';
 import '../styles/landing.css';
 
-const INTRO = toSentences(OPENING_SCRIPT);
+const STATEMENT =
+  'Seu cliente pesquisa antes de comprar. Se ele não encontra a sua empresa — ou não entende o que você faz — ele escolhe outra. E você nem fica sabendo.';
+const STATEMENT_WORDS = STATEMENT.split(' ');
+
+const JOURNEY = [
+  { icon: Zap, title: 'Necessidade', text: 'Surge um problema. O ar parou, a festa está chegando, a empresa precisa de um site.' },
+  { icon: Search, title: 'Pesquisa', text: 'Google, Instagram, Maps. Até quem recebe uma indicação pesquisa o nome antes de ligar.' },
+  { icon: Eye, title: 'Comparação', text: 'Fotos, descrição, sinais de vida. Em segundos ele decide quem parece mais confiável.' },
+  { icon: MousePointerClick, title: 'Decisão', text: 'Ganha quem passou mais segurança — e deixou o próximo passo mais fácil.' },
+];
+
+const INSIDE_ICONS = [BookOpenCheck, NotebookPen, ClipboardCheck, Smartphone];
+
+const MARQUEE = ['Presença digital', 'Credibilidade', 'Site profissional', 'Google', 'WhatsApp', 'Chamadas para ação', 'Plano de 30 dias'];
 
 export function Landing() {
-  const speech = useSpeech();
-  const { state, summary } = useProgress();
-  const mine = speech.trackId === 'abertura';
+  const root = useRef<HTMLDivElement>(null);
+  const statementRef = useRef<HTMLParagraphElement>(null);
+  const showcaseRef = useRef<HTMLElement>(null);
+  const heroRef = useRef<HTMLElement>(null);
+  const progressRef = useRef<HTMLSpanElement>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [heroVisible, setHeroVisible] = useState(true);
+  const [showcaseVisible, setShowcaseVisible] = useState(false);
+  const { ownership } = useOwnership();
+  const owned = ownership === 'owned';
 
+  useReveal(root);
+
+  // As palavras da frase de impacto acendem conforme a rolagem.
+  useScrollProgress(statementRef, (p) => statementRef.current?.style.setProperty('--p', p.toFixed(3)));
+  // O livro gira até ficar de frente quando a vitrine chega ao centro da tela.
+  useScrollProgress(showcaseRef, (p) => {
+    showcaseRef.current?.style.setProperty('--spin', `${((1 - p) * -46).toFixed(2)}deg`);
+    showcaseRef.current?.style.setProperty('--lift', `${((1 - p) * 60).toFixed(1)}px`);
+  });
+  useInView(heroRef, setHeroVisible);
+  useInView(showcaseRef, setShowcaseVisible, '-20% 0px -20% 0px');
+
+  // Barra de leitura da página inteira.
   useEffect(() => {
-    speech.load('abertura', INTRO);
-  }, [speech.load]);
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      progressRef.current?.style.setProperty('transform', `scaleX(${max > 0 ? window.scrollY / max : 0})`);
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, []);
 
-  const robotState: RobotState =
-    !mine || !speech.supported
-      ? 'idle'
-      : speech.status === 'playing'
-        ? 'speaking'
-        : speech.status === 'paused'
-          ? 'paused'
-          : speech.status === 'ended'
-            ? 'done'
-            : speech.status === 'error'
-              ? 'error'
-              : 'idle';
-
-  const started = Object.keys(state.modules).length > 0;
-  const playing = mine && speech.status === 'playing';
-
-  const toggleIntro = () => {
-    if (!mine) speech.load('abertura', INTRO);
-    if (playing) speech.pause();
-    else if (mine && speech.status === 'paused') speech.resume();
-    else speech.play(speech.status === 'ended' ? 0 : undefined);
+  const buy = () => {
+    setPreviewOpen(false);
+    if (owned) go('#biblioteca');
+    else setCheckoutOpen(true);
   };
 
-  const caption =
-    mine && speech.status !== 'idle' && speech.status !== 'error'
-      ? speech.sentences[speech.index]
-      : 'Olá! Eu sou o robô da NPWTech e vou apresentar este curso para você.';
+  const toEbook = () => document.getElementById('ebook')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   return (
-    <>
-      <section className="hero tech-grid" aria-labelledby="hero-title">
-        <div className="hero__smoke" aria-hidden="true" />
+    <div ref={root} className="landing">
+      <span className="read-progress" aria-hidden="true">
+        <span ref={progressRef} />
+      </span>
+
+      {/* 1 · Abertura */}
+      <section ref={heroRef} className="hero tech-grid" aria-labelledby="hero-title">
+        <div className="hero__glow" aria-hidden="true" />
         <div className="wrap hero__grid">
           <div className="hero__copy">
-            <p className="tag enter">{COURSE.platform} · Curso 01</p>
+            <p className="hero__badge enter">
+              <Sparkles aria-hidden="true" />
+              Novo ebook da NPWTech
+            </p>
             <h1 id="hero-title" className="hero__title enter enter-1">
-              Sua Empresa
-              <br />
-              no Digital
+              Sua empresa merece ser <em>encontrada.</em>
+              <br />E escolhida.
             </h1>
-            <p className="hero__tagline enter enter-2">{COURSE.tagline}</p>
-            <p className="hero__lead enter enter-2">{COURSE.description}</p>
+            <p className="hero__lead enter enter-2">
+              Um guia prático, sem jargão, para quem tem um negócio e quer transformar a presença na internet em clientes de
+              verdade.
+            </p>
             <div className="hero__actions enter enter-3">
-              <a className="btn btn-primary" href="#painel">
-                {started ? 'Continuar o curso' : 'Começar o curso'}
-                <ArrowRight />
-              </a>
-              <a className="btn" href="#aulas">
-                Conhecer as aulas
-              </a>
+              <button type="button" className="btn btn-primary btn-lg" onClick={toEbook}>
+                Conhecer o ebook
+                <ArrowDown />
+              </button>
+              <button type="button" className="btn btn-lg" onClick={() => setPreviewOpen(true)}>
+                Ler uma página grátis
+              </button>
             </div>
-            <ul className="hero__facts enter enter-4" aria-label="Sobre o curso">
+            <ul className="hero__facts enter enter-4" aria-label="Sobre o ebook">
               <li>
-                <span className="tag">Nível</span>
-                <strong>Iniciante</strong>
+                <strong>{TOC.length}</strong>
+                <span>capítulos</span>
               </li>
               <li>
-                <span className="tag">Módulos</span>
-                <strong>{MODULES.length} aulas</strong>
+                <strong>≈{TOTAL_MINUTES} min</strong>
+                <span>de leitura</span>
               </li>
               <li>
-                <span className="tag">Duração</span>
-                <strong>≈ {TOTAL_MINUTES} min</strong>
-              </li>
-              <li>
-                <span className="tag">Formato</span>
-                <strong>Narrado em português</strong>
+                <strong>30 dias</strong>
+                <span>de plano prático</span>
               </li>
             </ul>
-            {started && (
-              <p className="hero__progress enter enter-4">
-                <span className="hero__progress-bar" aria-hidden="true">
-                  <span style={{ transform: `scaleX(${summary.percent / 100})` }} />
-                </span>
-                Você já fez {summary.percent}% do curso.
-              </p>
-            )}
           </div>
 
-          <div className="hero__stage enter enter-2">
-            <div className="stage-card">
-              <span className="stage-card__corner tag" aria-hidden="true">
-                Apresentador
-              </span>
-              <RobotPresenter state={robotState} variant="hero" />
-              <div className="speech-bubble" aria-live="polite">
-                <p>{caption}</p>
-                {speech.supported ? (
-                  <button type="button" className="btn btn-sm" onClick={toggleIntro} disabled={!state.settings.narration}>
-                    {playing ? <Pause /> : <Play />}
-                    {playing ? 'Pausar' : mine && speech.status === 'paused' ? 'Continuar' : 'Ouvir apresentação'}
-                  </button>
-                ) : (
-                  <p className="speech-bubble__note">Seu navegador não oferece narração por voz.</p>
-                )}
-                {speech.supported && !state.settings.narration && (
-                  <p className="speech-bubble__note">A narração está desativada nas configurações.</p>
-                )}
-              </div>
-            </div>
+          <div className="hero__book enter enter-2">
+            <div className="hero__orbit" aria-hidden="true" />
+            <EbookCover angle={-24} size="md" onOpen={() => setPreviewOpen(true)} />
           </div>
+        </div>
+        <button type="button" className="scroll-cue" onClick={() => document.getElementById('problema')?.scrollIntoView({ behavior: 'smooth' })}>
+          <span>Role para descobrir</span>
+          <span className="scroll-cue__line" aria-hidden="true" />
+        </button>
+      </section>
+
+      <div className="marquee" aria-hidden="true">
+        <div className="marquee__track">
+          {[...MARQUEE, ...MARQUEE].map((w, i) => (
+            <span key={i}>
+              {w}
+              <i />
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* 2 · O problema */}
+      <section id="problema" className="statement" aria-label="O problema">
+        <div className="wrap">
+          <p className="tag" data-reveal>
+            O que acontece todos os dias
+          </p>
+          <p ref={statementRef} className="statement__text" style={{ '--n': STATEMENT_WORDS.length } as CSSProperties}>
+            {STATEMENT_WORDS.map((w, i) => (
+              <span key={i} style={{ '--i': i } as CSSProperties}>
+                {w}{' '}
+              </span>
+            ))}
+          </p>
         </div>
       </section>
 
-      <section id="aulas" className="modules-section" aria-labelledby="aulas-title">
+      {/* 3 · A jornada */}
+      <section className="journey" aria-labelledby="journey-title">
         <div className="wrap">
-          <header className="section-head">
-            <p className="tag">Conteúdo do curso</p>
-            <h2 id="aulas-title">Seis módulos, do primeiro passo ao seu plano de ação</h2>
-            <p>
-              Cada módulo tem uma aula narrada pelo robô, um exercício para aplicar no seu negócio e um quiz rápido de
-              revisão. As aulas seguem uma ordem, mas você pode revisitar qualquer uma quando quiser.
+          <header className="section-head" data-reveal>
+            <p className="tag">A jornada silenciosa do cliente</p>
+            <h2 id="journey-title">Quatro etapas. Você só fica sabendo da última.</h2>
+          </header>
+          <ol className="journey__list">
+            {JOURNEY.map(({ icon: Icon, title, text }, i) => (
+              <li key={title} data-reveal style={{ '--d': `${i * 90}ms` } as CSSProperties}>
+                <span className="journey__n">{String(i + 1).padStart(2, '0')}</span>
+                <Icon aria-hidden="true" />
+                <h3>{title}</h3>
+                <p>{text}</p>
+              </li>
+            ))}
+          </ol>
+          <p className="journey__bridge" data-reveal>
+            Este ebook mostra, passo a passo, como estar bem posicionado em cada uma delas.
+          </p>
+        </div>
+      </section>
+
+      {/* 4 · Sumário */}
+      <section id="sumario" className="toc-section" aria-labelledby="toc-title">
+        <div className="wrap toc-section__grid">
+          <header className="toc-section__head">
+            <p className="tag" data-reveal>
+              Sumário
+            </p>
+            <h2 id="toc-title" data-reveal>
+              Do primeiro passo ao seu plano de ação
+            </h2>
+            <p data-reveal>
+              Capítulos curtos, em ordem, cada um com algo para aplicar no mesmo dia. Leitura total de aproximadamente{' '}
+              {TOTAL_MINUTES} minutos.
             </p>
           </header>
-          <ol className="module-grid">
-            {MODULES.map((m) => (
-              <li key={m.id} className="module-card">
-                <a href={`#${m.id}`} className="module-card__link">
-                  <span className="module-card__top">
-                    <span className="tag">Módulo {String(m.number).padStart(2, '0')}</span>
-                    <span className="module-card__time">{m.duration}</span>
-                  </span>
-                  <h3>{m.title}</h3>
-                  <ul>
-                    {m.topics.slice(0, 3).map((t) => (
-                      <li key={t}>{t}</li>
-                    ))}
-                  </ul>
-                  <span className="module-card__go">
-                    Abrir aula <ArrowRight aria-hidden="true" />
-                  </span>
-                </a>
+          <ol className="toc-list">
+            {TOC.map((c, i) => (
+              <li key={c.title} data-reveal>
+                <span className="toc-list__n">{String(i).padStart(2, '0')}</span>
+                <div>
+                  <span className="tag">{c.kicker}</span>
+                  <h3>{c.title}</h3>
+                  <p>{c.summary}</p>
+                </div>
+                <span className="toc-list__min">{c.minutes} min</span>
               </li>
             ))}
           </ol>
         </div>
       </section>
 
-      <section className="light-band how" aria-labelledby="how-title">
-        <div className="wrap how__inner">
-          <header className="how__head">
-            <p className="tag">Como as aulas funcionam</p>
-            <h2 id="how-title">Ouça, pratique e revise no seu ritmo</h2>
+      {/* 5 · Por dentro */}
+      <section className="inside light-band" aria-labelledby="inside-title">
+        <div className="wrap">
+          <header className="section-head" data-reveal>
+            <p className="tag">Por dentro do livro</p>
+            <h2 id="inside-title">Não é só leitura. É um caderno de trabalho.</h2>
           </header>
-          <ul className="how__list">
-            <li>
-              <Headphones aria-hidden="true" />
-              <h3>O robô apresenta</h3>
-              <p>A narração usa a voz do seu navegador, com legendas e transcrição completa para acompanhar sem áudio.</p>
-            </li>
-            <li>
-              <PenLine aria-hidden="true" />
-              <h3>Você pratica</h3>
-              <p>Cada aula termina com um exercício aplicado à sua empresa. Suas respostas ficam guardadas neste navegador.</p>
-            </li>
-            <li>
-              <ListChecks aria-hidden="true" />
-              <h3>Você revisa</h3>
-              <p>Três perguntas por módulo, com explicação de cada resposta. Dá para tentar de novo quantas vezes quiser.</p>
-            </li>
+          <ul className="inside__grid">
+            {INSIDE.map((item, i) => {
+              const Icon = INSIDE_ICONS[i];
+              return (
+                <li key={item.title} data-reveal style={{ '--d': `${i * 80}ms` } as CSSProperties}>
+                  <Icon aria-hidden="true" />
+                  <h3>{item.title}</h3>
+                  <p>{item.text}</p>
+                </li>
+              );
+            })}
           </ul>
-          <div className="how__footer">
-            <img src={ASSETS.logoFull} alt={ASSETS.logoFullAlt} className="how__logo" width={136} height={112} />
-            <p>Um curso da NPWTech, empresa de desenvolvimento de sites, sistemas e aplicativos.</p>
-            <a className="btn btn-dark" href="#painel">
-              {started ? 'Continuar o curso' : 'Começar o curso'}
-              <ArrowRight />
-            </a>
+        </div>
+      </section>
+
+      {/* 6 · O livro */}
+      <section id="ebook" ref={showcaseRef} className="showcase tech-grid" aria-labelledby="ebook-title">
+        <div className="showcase__beam" aria-hidden="true" />
+        <div className="wrap showcase__grid">
+          <div className="showcase__stage">
+            <EbookCover angle={-18} size="lg" onOpen={() => setPreviewOpen(true)} label="Abrir o livro e ler uma página grátis" />
+            <p className="showcase__hint">
+              <MousePointerClick aria-hidden="true" />
+              Clique no livro e leia uma página
+            </p>
+          </div>
+
+          <div className="offer" data-reveal>
+            <p className="tag">Ebook · {EBOOK.edition}</p>
+            <h2 id="ebook-title">{EBOOK.title}</h2>
+            <p className="offer__sub">{EBOOK.subtitle}</p>
+            <ul className="offer__list">
+              {[
+                `${TOC.length} capítulos práticos, do diagnóstico ao plano de ação`,
+                'Exercícios e checklists para aplicar no seu negócio',
+                'Plano de 30 dias, semana a semana',
+                'Acesso imediato, vitalício, em qualquer aparelho',
+              ].map((t) => (
+                <li key={t}>
+                  <CircleCheck aria-hidden="true" />
+                  {t}
+                </li>
+              ))}
+            </ul>
+            <div className="offer__price">
+              <span className="offer__currency">R$</span>
+              <span className="offer__value">{EBOOK.price}</span>
+              <span className="offer__terms">
+                pagamento único
+                <br />
+                {EBOOK.installments}
+              </span>
+            </div>
+            <div className="offer__actions">
+              <button type="button" className="btn btn-primary btn-lg offer__buy" onClick={buy}>
+                {owned ? 'Ler meu ebook' : 'Comprar agora'}
+                <ArrowRight />
+              </button>
+              <button type="button" className="btn btn-lg" onClick={() => setPreviewOpen(true)}>
+                Ver prévia
+              </button>
+            </div>
+            <ul className="offer__trust">
+              <li>
+                <ShieldCheck aria-hidden="true" /> Pagamento seguro via Mercado Pago
+              </li>
+              <li>
+                <Zap aria-hidden="true" /> PIX liberado na hora
+              </li>
+              <li>
+                <LockKeyhole aria-hidden="true" /> 7 dias para desistir
+              </li>
+            </ul>
           </div>
         </div>
       </section>
-    </>
+
+      {/* 7 · Dúvidas */}
+      <section id="duvidas" className="faq" aria-labelledby="faq-title">
+        <div className="wrap faq__grid">
+          <header className="section-head" data-reveal>
+            <p className="tag">Dúvidas frequentes</p>
+            <h2 id="faq-title">Antes de comprar</h2>
+          </header>
+          <div className="faq__list">
+            {FAQ.map((f) => (
+              <details key={f.q} data-reveal>
+                <summary>
+                  {f.q}
+                  <Plus aria-hidden="true" />
+                </summary>
+                <p>{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 8 · Fechamento */}
+      <section className="closing" aria-labelledby="closing-title">
+        <div className="wrap closing__inner" data-reveal>
+          <h2 id="closing-title">Sua próxima etapa começa com conhecimento.</h2>
+          <button type="button" className="btn btn-primary btn-lg" onClick={owned ? buy : toEbook}>
+            {owned ? 'Ler meu ebook' : `Quero o ebook por ${EBOOK.priceLabel}`}
+            <ArrowRight />
+          </button>
+        </div>
+      </section>
+
+      {/* Atalho fixo no celular, até a vitrine aparecer */}
+      <div className="sticky-buy" data-show={(!heroVisible && !showcaseVisible) || undefined}>
+        <span>
+          <strong>{EBOOK.title}</strong>
+          <small>Ebook · {EBOOK.priceLabel}</small>
+        </span>
+        <button type="button" className="btn btn-primary btn-sm" onClick={toEbook}>
+          Ver o ebook
+        </button>
+      </div>
+
+      <PagePreview open={previewOpen} onClose={() => setPreviewOpen(false)} onBuy={buy} />
+      <CheckoutDialog open={checkoutOpen} onClose={() => setCheckoutOpen(false)} />
+    </div>
   );
 }

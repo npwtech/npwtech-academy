@@ -1,20 +1,16 @@
 import { useEffect, useState } from 'react';
 
-// Navegação por âncoras simples (#painel, #modulo-1, #conclusao).
-// Funciona sem servidor, inclusive abrindo o arquivo direto no navegador.
-export type Route =
-  | { name: 'inicio'; anchor?: string }
-  | { name: 'painel' }
-  | { name: 'modulo'; id: string; anchor?: string }
-  | { name: 'conclusao' };
+// Navegação por âncoras simples (#inicio, #ebook, #biblioteca, #biblioteca/capitulo).
+// Funciona em qualquer hospedagem estática, sem configuração de servidor.
+export type Route = { name: 'inicio'; anchor?: string } | { name: 'biblioteca'; chapter?: string };
+
+const LANDING_ANCHORS = new Set(['ebook', 'sumario', 'duvidas', 'problema']);
 
 function parse(hash: string): Route {
   const h = hash.replace(/^#/, '');
-  if (h === 'painel') return { name: 'painel' };
-  if (h === 'conclusao') return { name: 'conclusao' };
-  const m = h.match(/^(modulo-[1-6])(?:-(exercicio|quiz))?$/);
-  if (m) return { name: 'modulo', id: m[1], anchor: m[2] ? h : undefined };
-  if (h === 'aulas') return { name: 'inicio', anchor: 'aulas' };
+  const lib = h.match(/^biblioteca(?:\/([a-z0-9-]{1,60}))?$/);
+  if (lib) return { name: 'biblioteca', chapter: lib[1] };
+  if (LANDING_ANCHORS.has(h)) return { name: 'inicio', anchor: h };
   return { name: 'inicio' };
 }
 

@@ -1,104 +1,99 @@
-# NPWTech Academy — Sua Empresa no Digital
+# NPWTech Academy — Ebook "Sua Empresa no Digital"
 
-Plataforma de curso interativa da NPWTech, com o robô da marca como apresentador, narração por voz do navegador, legendas sincronizadas, transcrição, exercícios, quizzes e progresso salvo localmente.
+Página de vendas e leitor on-line do ebook **Sua Empresa no Digital**, da NPWTech.
 
-Feita com React 18 + TypeScript + Vite. Sem backend, sem chaves de API e sem serviços pagos.
+- Landing page em rolagem: abertura, problema, jornada do cliente, sumário, "por dentro do livro" e a **vitrine do livro em 3D**.
+- Clicar no livro abre uma **prévia gratuita** de uma página do Capítulo 1.
+- Compra por **R$ 55** via Mercado Pago (PIX, cartão em até 3×).
+- Depois do pagamento, o livro é liberado na **Minha biblioteca**, com login sem senha (código por e-mail) em qualquer aparelho.
 
-## Como rodar no Windows (Prompt de Comando)
+Feita com React 18 + TypeScript + Vite, Supabase (Auth, Postgres com RLS e Edge Functions) e Mercado Pago Checkout Pro.
 
-Pré-requisito: [Node.js](https://nodejs.org) 18 ou mais recente.
+## Como a segurança funciona
+
+| Camada | O que protege |
+|---|---|
+| Conteúdo fora do site | O texto completo dos capítulos está **só no banco**. O arquivo que o carrega (`supabase/migrations/…_ebook_content.sql`) **não é versionado**: este repositório é público. O código publicado contém apenas a página de prévia. |
+| RLS no Postgres | A tabela `ebook_chapters` só devolve linhas para quem tem um pedido com `status = 'paid'`. Pedidos só podem ser lidos pelo próprio dono e **nunca** escritos pelo navegador. |
+| Preço no servidor | A Edge Function `create-checkout` lê o preço da tabela `products`. O navegador não envia valor. |
+| Webhook assinado | `mp-webhook` valida a assinatura `x-signature` (HMAC-SHA256) e a idade da notificação, depois **consulta o pagamento direto na API do Mercado Pago**. Só libera se valor, moeda e pedido conferirem. Estornos e chargebacks revogam o acesso. |
+| Login sem senha | Código de 6 dígitos pelo Supabase Auth. O livro fica ligado ao e-mail verificado. |
+| Navegador | CSP restritiva na versão publicada, redirecionamento aceito só para domínios do Mercado Pago, conteúdo renderizado como React (nunca HTML cru), CORS das funções limitado ao domínio do site. |
+| Abuso e robôs | Limites de pedidos, de consultas e de envio de códigos, webhook que ignora chamadas sem assinatura e CAPTCHA recomendado. |
+| Dissuasão de cópia | Marca d'água com o e-mail do comprador, cópia/menu de contexto desativados no texto e impressão bloqueada. *Isso desestimula, mas não impede, quem está decidido a copiar o que vê na tela.* |
+
+Detalhes, modelo de ameaças e checklist de produção: [SECURITY.md](SECURITY.md).
+
+## Ativação (uma vez)
+
+Pré-requisitos: [Node.js](https://nodejs.org) 18+, uma conta no [Supabase](https://supabase.com), uma conta no [Mercado Pago](https://www.mercadopago.com.br/developers) e a [Supabase CLI](https://supabase.com/docs/guides/local-development/cli/getting-started).
+
+1. **Banco e funções**. Antes do `db push`, coloque o arquivo do conteúdo do livro (`20261029120100_ebook_content.sql`, guardado fora do repositório) na pasta `supabase/migrations/`. O `.gitignore` impede que ele seja enviado ao GitHub.
+   ```cmd
+   supabase login
+   supabase link --project-ref SEU_PROJECT_REF
+   supabase db push
+   supabase functions deploy create-checkout
+   supabase functions deploy sync-order
+   supabase functions deploy mp-webhook --no-verify-jwt
+   ```
+2. **Segredos das funções** (nunca vão para o código):
+   ```cmd
+   supabase secrets set MP_ACCESS_TOKEN=APP_USR-...
+   supabase secrets set MP_WEBHOOK_SECRET=...
+   supabase secrets set SITE_URL=https://academy.npwtech.com.br
+   supabase secrets set ALLOWED_ORIGINS=https://academy.npwtech.com.br
+   ```
+3. **Webhook no Mercado Pago** → Suas integrações → sua aplicação → Webhooks:
+   URL `https://SEU_PROJECT_REF.supabase.co/functions/v1/mp-webhook`, evento **Pagamentos**. Copie a *assinatura secreta* para `MP_WEBHOOK_SECRET`.
+4. **E-mail com código** → Supabase → Authentication → Email Templates → *Magic Link*: inclua `{{ .Token }}` no texto, por exemplo
+   `Seu código de acesso ao ebook NPWTech é {{ .Token }}`. Para produção, configure um SMTP próprio (Authentication → SMTP), porque o envio padrão do Supabase tem limite baixo por hora.
+5. **Site**: copie `.env.example` para `.env` e preencha `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`.
+
+Sem o `.env`, o site funciona normalmente e o botão de compra indica o WhatsApp.
+
+## Rodar e publicar
 
 ```cmd
-cd caminho\para\npwtech-academy
 npm install
-npm run dev
+npm run dev        :: desenvolvimento em http://localhost:5173
+npm run build      :: gera a pasta dist\ para publicar
 ```
 
-Abra o endereço que aparecer no terminal (normalmente http://localhost:5173).
+Publique a pasta `dist\` em qualquer hospedagem estática com HTTPS (Netlify, Vercel, Cloudflare Pages, Hostinger…).
+Os cabeçalhos de segurança já vão junto no build: `public/_headers` (Netlify/Cloudflare Pages) e `public/.htaccess` (Hostinger/cPanel, com HTTPS forçado). A CSP da página usa a URL exata do Supabase definida no `.env`, então gere o build com o `.env` preenchido.
 
-### Gerar a versão para publicar
+## Alterar preço ou conteúdo
 
-```cmd
-npm run build
-```
-
-O resultado é **um único arquivo**: `dist\index.html`, com CSS, JavaScript e imagens embutidos.
-Você pode:
-
-- abrir esse arquivo direto no navegador (dois cliques);
-- enviar para qualquer hospedagem estática (Hostinger, Netlify, Vercel, cPanel etc.), por exemplo em `npwtech.com.br/academy/`.
-
-As fontes Space Grotesk e DM Sans vêm do Google Fonts. Sem internet, o navegador usa as fontes alternativas do sistema.
-
-## Onde ficam as imagens da marca
-
-```
-src/assets/
-├─ robot.webp       → robô da NPWTech com fundo removido (apresentador)
-├─ logo_full.webp   → logo completa, fundo transparente (seções claras)
-├─ logo_mark.webp   → símbolo hexagonal, fundo transparente (cabeçalho)
-└─ logo_dark.webp   → símbolo sobre fundo preto (original enviado)
-```
-
-Para trocar uma imagem, substitua o arquivo mantendo o mesmo nome e rode `npm run build` de novo.
-O robô funciona melhor em PNG/WebP com fundo transparente.
-
-## Onde editar o conteúdo
-
-Todo o texto do curso está em **`src/data/course.ts`**: roteiros narrados, tópicos, objetivos, exercícios, perguntas dos quizzes, contatos e a chamada final. A interface se ajusta sozinha ao conteúdo.
+- **Preço cobrado**: `update public.products set price_cents = 5500 where id = 'ebook-sua-empresa-no-digital';` e ajuste o texto exibido em `src/data/ebook.ts` (`EBOOK.price`).
+- **Conteúdo do livro**: edite os blocos em uma nova migração (`update public.ebook_chapters set blocks = … where slug = …`). Os tipos de bloco estão em `src/data/ebook.ts` (tipo `Block`). Guarde o arquivo de conteúdo em local seguro: ele não fica no repositório.
+- **Vitrine, sumário, prévia e FAQ**: `src/data/ebook.ts`.
 
 ## Estrutura
 
 ```
 src/
-├─ data/course.ts            conteúdo dos 6 módulos
+├─ data/ebook.ts             vitrine, sumário, prévia pública e perguntas frequentes
+├─ lib/supabase.ts           cliente público (chave anon)
 ├─ state/
-│  ├─ progress.tsx           progresso e preferências (localStorage)
-│  ├─ speech.tsx             motor de narração (SpeechSynthesis)
-│  └─ router.ts              navegação por âncoras (#painel, #modulo-1…)
+│  ├─ auth.tsx               login sem senha por código no e-mail
+│  ├─ library.ts             compra, confirmação de pagamento e capítulos
+│  └─ router.ts              #inicio, #ebook, #biblioteca, #biblioteca/<capitulo>
+├─ hooks/useScroll.ts        revelação ao rolar e animações ligadas à rolagem
 ├─ components/
-│  ├─ AppHeader, SiteFooter
-│  ├─ Landing                página inicial do curso
-│  ├─ CourseDashboard        painel do aluno
-│  ├─ LessonPlayer           área de aprendizagem
-│  ├─ CourseSidebar          menu de módulos (gaveta no celular)
-│  ├─ RobotPresenter         robô animado (flutuação, respiração, brilho, estados)
-│  ├─ AudioControls          ouvir, pausar, repetir, frases, velocidade
-│  ├─ LessonTranscript       transcrição com frase atual destacada
-│  ├─ ExercisePanel          exercício com respostas salvas
-│  ├─ QuizPanel              3 perguntas por módulo, feedback e nova tentativa
-│  ├─ ProgressIndicator      anel, barra, etapas e interruptores
-│  ├─ SettingsDialog         voz, velocidade, timbre, legendas, texto, animações
-│  └─ CourseCompletion       conclusão e chamada comercial
+│  ├─ Landing                página de vendas
+│  ├─ EbookCover             livro em 3D (só CSS)
+│  ├─ PagePreview            prévia: o livro se abre em uma página
+│  ├─ CheckoutDialog         e-mail → código → Mercado Pago
+│  ├─ Library                biblioteca e confirmação de compra
+│  ├─ EbookReader            leitor com sumário, tamanho de texto e marca d'água
+│  └─ EbookBlocks            renderização segura dos blocos do livro
 └─ styles/                   tokens do Design System e CSS por área
+supabase/
+├─ migrations/               tabelas, RLS e conteúdo do livro
+└─ functions/                create-checkout, sync-order, mp-webhook
 ```
 
-## Endereços das telas
+## Direito de arrependimento
 
-| Tela | Endereço |
-|---|---|
-| Página inicial | `#inicio` |
-| Lista de aulas | `#aulas` |
-| Painel do aluno | `#painel` |
-| Aula de um módulo | `#modulo-1` … `#modulo-6` |
-| Exercício / quiz de um módulo | `#modulo-3-exercicio`, `#modulo-3-quiz` |
-| Conclusão e chamada final | `#conclusao` |
-
-## O que depende do navegador ou de serviços externos
-
-| Recurso | Depende de | Se não estiver disponível |
-|---|---|---|
-| Narração do robô | Web Speech API (`speechSynthesis`) do navegador | Aviso na tela; aula segue com legendas, transcrição e avanço manual das frases |
-| Vozes em português | Vozes instaladas no sistema. No Windows, o Edge oferece vozes "Online (Natural)" em pt-BR; o Chrome oferece "Google português do Brasil" | Usa a voz padrão do navegador |
-| Som "robótico" | Ajuste de timbre (pitch) da própria API; o resultado varia por voz | A voz continua clara e funcional |
-| Progresso salvo | `localStorage` do navegador | Aviso na tela; o progresso vale enquanto a página estiver aberta |
-| Fontes | Google Fonts | Fontes do sistema (Segoe UI no Windows) |
-| Links "Solicitar um orçamento" e "Conhecer a NPWTech" | wa.me e npwtech.com.br | Número e site também aparecem como texto |
-
-O progresso é **local**: fica só no navegador e no dispositivo em que o aluno estudou. Não há login nem sincronização entre aparelhos.
-
-## Limitações conhecidas
-
-- A imagem do robô é uma figura única: as animações movem a imagem inteira (flutuar, respirar, inclinar e brilho na tela do rosto). Não existe sincronização labial.
-- Alguns navegadores móveis pausam a fala quando a tela bloqueia.
-- O botão "Pausar" usa a pausa nativa da API. Se o navegador não retomar, a frase atual é reiniciada automaticamente.
+O site informa os 7 dias de desistência previstos no art. 49 do Código de Defesa do Consumidor. O estorno é feito pelo painel do Mercado Pago; o webhook revoga o acesso automaticamente quando o pagamento é estornado.

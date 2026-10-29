@@ -55,28 +55,6 @@
   color: var(--fg-2);
 }
 
-.app-header__course {
-  display: none;
-  align-items: center;
-  gap: 12px;
-  padding-left: 24px;
-  border-left: 1px solid var(--line);
-  font-family: var(--font-display);
-  font-weight: 500;
-  font-size: 0.9375rem;
-  min-width: 0;
-}
-.app-header__course span:last-child {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-@media (min-width: 860px) {
-  .app-header__course {
-    display: inline-flex;
-  }
-}
-
 .app-header__nav {
   margin-left: auto;
   display: flex;
@@ -101,11 +79,27 @@
 .app-header__nav a[aria-current='page'] {
   color: var(--fg);
 }
-.app-header__nav .icon-btn {
-  margin-left: 6px;
+.app-header__nav .app-header__library {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 8px;
+  padding: 9px 16px;
+  border: 1px solid var(--line-field);
+  color: var(--fg);
 }
-@media (max-width: 420px) {
-  .app-header__nav a[href='#inicio'] {
+.app-header__library svg {
+  width: 16px;
+  height: 16px;
+}
+.app-header__nav .app-header__library:hover,
+.app-header__nav .app-header__library[aria-current='page'] {
+  background: var(--white);
+  border-color: var(--white);
+  color: var(--on-light);
+}
+@media (max-width: 760px) {
+  .app-header__hide-sm {
     display: none;
   }
 }

@@ -1,6 +1,5 @@
-import { Settings2 } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 import { ASSETS } from '../assets';
-import { COURSE } from '../data/course';
 import type { Route } from '../state/router';
 import '../styles/layout.css';
 
@@ -16,28 +15,25 @@ export function Brand({ compact = false }: { compact?: boolean }) {
   );
 }
 
-export function AppHeader({ route, onOpenSettings }: { route: Route; onOpenSettings: () => void }) {
-  const inCourse = route.name === 'modulo' || route.name === 'painel' || route.name === 'conclusao';
+export function AppHeader({ route }: { route: Route }) {
   return (
     <header className="app-header">
       <div className="app-header__inner">
         <Brand />
-        {inCourse && (
-          <p className="app-header__course">
-            <span className="tag">Curso</span>
-            <span>{COURSE.title}</span>
-          </p>
-        )}
         <nav className="app-header__nav" aria-label="Navegação principal">
-          <a href="#inicio" aria-current={route.name === 'inicio' ? 'page' : undefined}>
-            Início
+          <a href="#sumario" className="app-header__hide-sm">
+            Sumário
           </a>
-          <a href="#painel" aria-current={route.name === 'painel' ? 'page' : undefined}>
-            Meu painel
+          <a href="#duvidas" className="app-header__hide-sm">
+            Dúvidas
           </a>
-          <button type="button" className="icon-btn" onClick={onOpenSettings} aria-label="Configurações de áudio e acessibilidade">
-            <Settings2 />
-          </button>
+          <a href="#ebook" className="app-header__hide-sm">
+            Ebook
+          </a>
+          <a href="#biblioteca" className="app-header__library" aria-current={route.name === 'biblioteca' ? 'page' : undefined}>
+            <BookOpen aria-hidden="true" />
+            Minha biblioteca
+          </a>
         </nav>
       </div>
     </header>
