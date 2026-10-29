@@ -15,3 +15,11 @@ Thumbs.db
 *.local
 .env
 .env.*
+!.env.example
+
+# Conteúdo pago do ebook: fica só na máquina de quem publica (repositório público)
+supabase/migrations/*_ebook_content.sql
+
+# Supabase CLI
+supabase/.temp/
+supabase/.branches/
