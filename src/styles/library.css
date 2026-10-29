@@ -1,0 +1,81 @@
+/* Biblioteca: entrada com código por e-mail, confirmação de pagamento e acesso ao leitor. */
+.library {
+  padding-block: clamp(48px, 8vw, 96px);
+  min-height: calc(100svh - var(--header-h) - 200px);
+}
+.library__grid {
+  display: grid;
+  gap: 48px;
+  align-items: center;
+  max-width: 1040px;
+  margin-inline: auto;
+}
+@media (min-width: 900px) {
+  .library__grid {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: 72px;
+  }
+}
+.library__book {
+  display: grid;
+  place-items: center;
+  padding-block: 24px;
+}
+@media (max-width: 899px) {
+  .library__book .book {
+    --bw: 170px;
+  }
+}
+.library-card {
+  display: grid;
+  gap: 18px;
+  padding: clamp(24px, 4vw, 40px);
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+}
+.library-card h1 {
+  font-size: var(--step-3);
+}
+.library-card__lead {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--fg-2);
+}
+.library-card__lead svg {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  color: var(--fg);
+}
+.library-card__lead strong {
+  color: var(--fg);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.library-card__loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--fg-2);
+}
+.library-card__loading svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+.library-card__form {
+  display: grid;
+  gap: 16px;
+}
+.library-card__form .btn {
+  width: 100%;
+}
+.library-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
