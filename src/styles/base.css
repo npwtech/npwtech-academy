@@ -9,9 +9,6 @@ html {
   background: var(--black);
   scroll-padding-top: calc(var(--header-h) + 16px);
 }
-html.text-large {
-  font-size: 112.5%;
-}
 
 body {
   margin: 0;
@@ -348,10 +345,49 @@ button:disabled {
     scroll-behavior: auto !important;
   }
 }
-html.motion-reduced *,
-html.motion-reduced *::before,
-html.motion-reduced *::after {
-  animation-duration: 0.001ms !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: 0.001ms !important;
+
+/* Botão grande e botão com aparência de link */
+.btn-lg {
+  min-height: 54px;
+  padding: 0 28px;
+  font-size: 1rem;
+}
+.link-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--fg);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  justify-self: start;
+}
+
+/* Indicador de carregamento */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+
+/* Revelação ao rolar: o conteúdo começa visível se o JavaScript não rodar */
+.js-reveal [data-reveal] {
+  opacity: 0.001;
+  transform: translateY(28px);
+  transition:
+    opacity 900ms var(--ease) var(--d, 0ms),
+    transform 900ms var(--ease) var(--d, 0ms);
+}
+.js-reveal [data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .js-reveal [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
 }
