@@ -51,9 +51,10 @@ export function EbookCover({ angle = -28, size = 'md', onOpen, label }: Props) {
           </span>
           <span className="book__subtitle">O guia prático para ser encontrado e escolhido na internet</span>
           <span className="book__hex" />
+          <img className="book__robot" src={ASSETS.robot} alt="" width={900} height={871} />
           <span className="book__bottom-row">
             <span>8 capítulos</span>
-            <span>Checklists · Exercícios · Plano de 30 dias</span>
+            <span>+ plano de 30 dias</span>
           </span>
           <span className="book__glare" />
         </span>
