@@ -1,6 +1,6 @@
 /* Design System NPWTech — tema escuro único, definido pela marca.
-   Layout: grafite profundo com grade técnica, palco do robô como peça central,
-   seções claras pontuais para contraste. */
+   Layout: grafite profundo com grade técnica, o ebook em 3D como peça central,
+   seções claras pontuais para contraste e páginas em tom de papel no leitor. */
 :root {
   color-scheme: dark;
 
@@ -29,6 +29,17 @@
   --line-faint: rgba(255, 255, 255, 0.05);
   --focus: #adadb1;
   --error: #ea3c3f;
+  --success: #3ccf8e;
+
+  /* Ebook: papel, tinta e acabamento metálico da capa */
+  --paper: #f4f2ed;
+  --paper-2: #e9e6df;
+  --paper-edge: #d9d5cc;
+  --ink: #141416;
+  --ink-2: #4a4a4f;
+  --ink-3: #8a8a8f;
+  --silver: linear-gradient(115deg, #8d8d92 0%, #f5f5f5 28%, #b9b9be 46%, #ffffff 62%, #9c9ca1 100%);
+  --glow: rgba(245, 245, 245, 0.12);
 
   /* Tipografia */
   --font-display: 'Space Grotesk', 'Segoe UI', system-ui, -apple-system, sans-serif;
@@ -42,6 +53,7 @@
   --step-3: clamp(1.5rem, 1.1rem + 1.4vw, 2rem);
   --step-4: clamp(2rem, 1.3rem + 2.6vw, 3rem);
   --step-5: clamp(2.6rem, 1.4rem + 4.6vw, 4.75rem);
+  --step-6: clamp(2.9rem, 1.2rem + 6.4vw, 6.25rem);
 
   /* Forma */
   --r-sm: 12px;
