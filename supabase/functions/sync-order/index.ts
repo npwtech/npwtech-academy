@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
 
     const { data: orders } = await admin
       .from('orders')
-      .select('id, status')
+      .select('id, status, created_at, updated_at')
       .eq('user_id', user.id)
       .eq('product_id', PRODUCT_ID)
       .order('created_at', { ascending: false })
@@ -30,7 +30,17 @@ Deno.serve(async (req) => {
     if (!orders?.length) return json(req, { status: 'none' });
     if (orders.some((o) => o.status === 'paid')) return json(req, { status: 'paid' });
 
-    for (const order of orders.filter((o) => o.status === 'pending')) {
+    // Só consulta o Mercado Pago para pedidos das últimas 48 h, no máximo 2 por chamada.
+    const since = Date.now() - 48 * 60 * 60 * 1000;
+    const recent = orders.filter((o) => o.status === 'pending' && Date.parse(o.created_at) > since).slice(0, 2);
+    if (!recent.length) return json(req, { status: 'pending' });
+
+    // Limite por conta: uma consulta a cada 3 segundos (o site consulta a cada 4).
+    const lastTouch = Math.max(...recent.map((o) => Date.parse(o.updated_at)));
+    if (Date.now() - lastTouch < 3000) return json(req, { status: 'pending' });
+    await admin.from('orders').update({ updated_at: new Date().toISOString() }).in('id', recent.map((o) => o.id));
+
+    for (const order of recent) {
       const payments = await searchPaymentsByOrder(order.id);
       for (const payment of payments) {
         if ((await applyPayment(admin, payment)) === 'paid') return json(req, { status: 'paid' });
