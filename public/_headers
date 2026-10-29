@@ -1,0 +1,9 @@
+# Cabeçalhos de segurança para Netlify e Cloudflare Pages.
+# Em outras hospedagens (Hostinger/cPanel), use o .htaccess equivalente descrito no README.
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Content-Security-Policy: frame-ancestors 'none'
