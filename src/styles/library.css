@@ -79,3 +79,11 @@
   flex-wrap: wrap;
   gap: 10px;
 }
+
+.library__book {
+  position: relative;
+}
+.library__bubble {
+  right: max(0px, calc(50% - 230px));
+  top: -4%;
+}
