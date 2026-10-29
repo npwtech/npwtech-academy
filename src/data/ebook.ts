@@ -109,3 +109,15 @@ export const FAQ = [
     a: 'Não. O livro foi escrito para empreendedores, sem jargão técnico, com exemplos do dia a dia de pequenos negócios.',
   },
 ];
+
+// O que o robô diz na abertura de cada capítulo (leitor e PDF).
+export const ROBOT_LINES: Record<string, string> = {
+  introducao: 'Oi! Eu vou te acompanhar por todo o livro. Bora deixar sua empresa impossível de ignorar?',
+  'por-que-estar-na-internet': 'Seu cliente já está pesquisando agora. A pergunta é: ele vai encontrar você?',
+  'divulgacao-estrategica': 'Publicar muito não adianta. Publicar certo, pra pessoa certa, muda tudo.',
+  'site-profissional': 'Rede social é aluguel. Site é casa própria. Vamos construir a sua?',
+  'encontrado-no-google': 'Vou te mostrar como falar a língua do cliente e do Google ao mesmo tempo.',
+  'visitas-em-oportunidades': 'Visita boa é visita que vira conversa. Bora tirar os obstáculos do caminho?',
+  'proximo-passo': 'Hora de olhar pro seu negócio e escolher o que fazer primeiro.',
+  'plano-de-30-dias': 'Último capítulo! Agora é transformar tudo em rotina, uma semana de cada vez.',
+};
