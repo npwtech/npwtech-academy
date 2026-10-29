@@ -11,6 +11,8 @@ const admin = createClient(requireEnv('SUPABASE_URL'), requireEnv('SUPABASE_SERV
 
 Deno.serve(async (req) => {
   if (req.method !== 'POST') return new Response('method not allowed', { status: 405 });
+  // Notificações do Mercado Pago são pequenas; recusa corpos grandes antes de ler.
+  if (Number(req.headers.get('content-length') ?? 0) > 16_384) return new Response('payload too large', { status: 413 });
 
   const url = new URL(req.url);
   let body: { type?: string; action?: string; data?: { id?: string | number } } = {};
@@ -24,14 +26,18 @@ Deno.serve(async (req) => {
   const dataId = url.searchParams.get('data.id') ?? (body.data?.id != null ? String(body.data.id) : '');
   const signatureOk = await verifyWebhookSignature(req, dataId);
 
+  // Chamadas sem assinatura válida não tocam no banco (evita encher a tabela com requisições falsas).
+  if (!signatureOk) {
+    console.warn('mp-webhook: assinatura inválida', req.headers.get('x-request-id')?.slice(0, 64) ?? '');
+    return new Response('invalid signature', { status: 401 });
+  }
+
   await admin.from('payment_events').insert({
-    topic,
+    topic: topic.slice(0, 64),
     resource_id: dataId.slice(0, 64) || null,
     request_id: req.headers.get('x-request-id')?.slice(0, 128) ?? null,
-    signature_ok: signatureOk,
+    signature_ok: true,
   });
-
-  if (!signatureOk) return new Response('invalid signature', { status: 401 });
   if (topic !== 'payment' || !/^\d+$/.test(dataId)) return new Response('ignored', { status: 200 });
 
   try {
