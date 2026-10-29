@@ -318,3 +318,65 @@
     content: 'Conteúdo licenciado para leitura na biblioteca NPWTech.';
   }
 }
+
+/* Robô no leitor: abertura do capítulo e cartão de capítulo concluído */
+.reader__opener {
+  position: relative;
+}
+.reader__mascot {
+  width: 130px;
+  justify-self: end;
+  margin-top: 70px;
+  margin-bottom: -2em;
+}
+.reader__mascot .mascot__img {
+  filter: drop-shadow(0 16px 20px rgba(0, 0, 0, 0.22));
+}
+.reader__mascot .mascot__bubble {
+  right: 40%;
+  max-width: 220px;
+  font-size: 0.8125rem;
+  background: var(--ink);
+  color: var(--paper);
+}
+@media (min-width: 760px) {
+  .reader__opener {
+    padding-right: 170px;
+  }
+  .reader__mascot {
+    position: absolute;
+    right: -10px;
+    bottom: -1px;
+    margin: 0;
+    width: 150px;
+  }
+  .reader__mascot .mascot__bubble {
+    right: -6px;
+    bottom: 98%;
+    width: 170px;
+  }
+  .reader__mascot .mascot__bubble::after {
+    right: 40px;
+  }
+}
+.reader__done {
+  display: flex;
+  align-items: center;
+  gap: 0.9em;
+  margin-top: 2.4em !important;
+  padding: 1em 1.1em;
+  border-radius: 16px;
+  background: var(--paper-2);
+}
+.reader__done div {
+  display: grid;
+  line-height: 1.4;
+}
+.reader__done strong {
+  font-family: var(--font-display);
+  font-size: 1.05em;
+}
+.reader__done span {
+  font-size: 0.88em;
+  color: var(--ink-2);
+}
