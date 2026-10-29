@@ -105,6 +105,11 @@ export async function applyPayment(admin: SupabaseClient, payment: MpPayment): P
       .update({ status: 'paid', mp_payment_id: String(payment.id), paid_at: new Date().toISOString() })
       .eq('id', order.id)
       .eq('status', 'pending');
+    if (error?.code === '23505') {
+      // A pessoa já tinha um pedido pago (pagou duas vezes): mantém o acesso e sinaliza para estorno manual.
+      console.warn(`Pagamento duplicado ${payment.id} no pedido ${order.id}: estornar pelo painel do Mercado Pago.`);
+      return 'ignored';
+    }
     if (error) throw error;
     return 'paid';
   }
