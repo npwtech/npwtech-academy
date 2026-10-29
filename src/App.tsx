@@ -1,39 +1,35 @@
-import { useEffect, useRef, useState } from 'react';
-import { ProgressProvider, useProgress } from './state/progress';
-import { SpeechProvider } from './state/speech';
+import { useEffect, useRef } from 'react';
+import { AuthProvider } from './state/auth';
 import { useRoute } from './state/router';
-import { getModule } from './data/course';
 import { AppHeader } from './components/AppHeader';
 import { Landing } from './components/Landing';
-import { CourseDashboard } from './components/CourseDashboard';
-import { LessonPlayer } from './components/LessonPlayer';
-import { CourseCompletion } from './components/CourseCompletion';
-import { SettingsDialog } from './components/SettingsDialog';
+import { CHECKOUT_RETURN_KEY, Library } from './components/Library';
 import { SiteFooter } from './components/SiteFooter';
+
+// Volta do Mercado Pago (?compra=retorno): limpa a URL e abre a biblioteca para confirmar o pagamento.
+function consumeCheckoutReturn() {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.has('compra')) return;
+  try {
+    sessionStorage.setItem(CHECKOUT_RETURN_KEY, '1');
+  } catch {
+    // sem sessionStorage: o webhook libera o acesso mesmo assim
+  }
+  window.history.replaceState(null, '', `${window.location.pathname}#biblioteca`);
+}
+consumeCheckoutReturn();
 
 function Shell() {
   const route = useRoute();
-  const { state } = useProgress();
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
 
-  // Preferências de acessibilidade aplicadas no documento inteiro.
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.toggle('text-large', state.settings.largeText);
-    root.classList.toggle('motion-reduced', state.settings.reduceMotion);
-  }, [state.settings.largeText, state.settings.reduceMotion]);
-
   // Ao trocar de tela: volta ao topo (ou à seção pedida) e move o foco para o conteúdo.
-  const routeKey = route.name === 'modulo' ? route.id : route.name;
-  const anchor = route.name === 'inicio' || route.name === 'modulo' ? route.anchor : undefined;
+  const routeKey = route.name === 'biblioteca' ? `biblioteca/${route.chapter ?? ''}` : route.name;
+  const anchor = route.name === 'inicio' ? route.anchor : undefined;
   useEffect(() => {
     if (anchor) {
-      // aguarda a tela renderizar antes de rolar até a seção
       const t = window.setTimeout(() => {
-        const el = document.getElementById(anchor);
-        el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        el?.focus?.({ preventScroll: true });
+        document.getElementById(anchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 60);
       return () => window.clearTimeout(t);
     }
@@ -41,32 +37,25 @@ function Shell() {
     mainRef.current?.focus({ preventScroll: true });
   }, [routeKey, anchor]);
 
-  const mod = route.name === 'modulo' ? getModule(route.id) : undefined;
-
   return (
     <>
       <a className="skip-link" href="#conteudo" onClick={(e) => { e.preventDefault(); mainRef.current?.focus(); }}>
         Pular para o conteúdo
       </a>
-      <AppHeader route={route} onOpenSettings={() => setSettingsOpen(true)} />
+      <AppHeader route={route} />
       <main id="conteudo" ref={mainRef} tabIndex={-1} className="app-main">
         {route.name === 'inicio' && <Landing />}
-        {route.name === 'painel' && <CourseDashboard onOpenSettings={() => setSettingsOpen(true)} />}
-        {route.name === 'modulo' && mod && <LessonPlayer key={mod.id} mod={mod} onOpenSettings={() => setSettingsOpen(true)} />}
-        {route.name === 'conclusao' && <CourseCompletion />}
+        {route.name === 'biblioteca' && <Library chapter={route.chapter} />}
       </main>
-      {route.name !== 'modulo' && <SiteFooter />}
-      <SettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      {!(route.name === 'biblioteca' && route.chapter) && <SiteFooter />}
     </>
   );
 }
 
 export default function App() {
   return (
-    <ProgressProvider>
-      <SpeechProvider>
-        <Shell />
-      </SpeechProvider>
-    </ProgressProvider>
+    <AuthProvider>
+      <Shell />
+    </AuthProvider>
   );
 }
