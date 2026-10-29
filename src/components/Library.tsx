@@ -10,6 +10,11 @@ import '../styles/library.css';
 
 export const CHECKOUT_RETURN_KEY = 'npw:checkout-return';
 
+// Fala do robô da capa, conforme a situação da compra.
+function LibraryBubble({ text }: { text?: string }) {
+  return text ? <p className="book-bubble library__bubble">{text}</p> : null;
+}
+
 function LoginPanel() {
   const auth = useAuth();
   const [email, setEmail] = useState('');
@@ -162,6 +167,17 @@ export function Library({ chapter }: { chapter?: string }) {
       <div className="library__grid">
         <div className="library__book" aria-hidden="true">
           <EbookCover angle={-22} size="md" />
+          <LibraryBubble
+            text={
+              confirming
+                ? 'Tô confirmando com o Mercado Pago. Só um instante!'
+                : ownership === 'signed-out'
+                  ? 'Entra com seu e-mail que eu abro o livro pra você.'
+                  : ownership === 'not-owned'
+                    ? 'Seu exemplar está te esperando!'
+                    : undefined
+            }
+          />
         </div>
         <div className="library-card">
           <p className="tag">Minha biblioteca</p>
