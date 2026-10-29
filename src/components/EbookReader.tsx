@@ -1,9 +1,10 @@
 import { ArrowLeft, ArrowRight, List, LogOut, Minus, Plus, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { Chapter } from '../data/ebook';
-import { EBOOK } from '../data/ebook';
+import { EBOOK, ROBOT_LINES } from '../data/ebook';
 import { go } from '../state/router';
 import { EbookBlocks } from './EbookBlocks';
+import { Mascot } from './Mascot';
 import '../styles/reader.css';
 
 interface Props {
@@ -171,8 +172,16 @@ export function EbookReader({ chapters, slug, email, onSignOut }: Props) {
             <p className="tag">{chapter.kicker}</p>
             <h1 className="eb-chapter-title">{chapter.title}</h1>
             <p className="reader__summary">{chapter.summary}</p>
+            {ROBOT_LINES[chapter.slug] && <Mascot className="reader__mascot" side="top" says={ROBOT_LINES[chapter.slug]} />}
           </header>
           <EbookBlocks blocks={chapter.blocks} />
+          <aside className="reader__done">
+            <Mascot variant="avatar" />
+            <div>
+              <strong>{next ? `${chapter.kicker} concluído!` : 'Você terminou o livro!'}</strong>
+              <span>{next ? `Próximo: ${next.title}` : 'Agora é colocar em prática. Conte com a NPWTech no que precisar.'}</span>
+            </div>
+          </aside>
           <p className="reader__license">Licenciado para {email}. Uso pessoal; a redistribuição não é permitida.</p>
         </article>
 
