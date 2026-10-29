@@ -22,6 +22,7 @@ import { useOwnership } from '../state/library';
 import { go } from '../state/router';
 import { CheckoutDialog } from './CheckoutDialog';
 import { EbookCover } from './EbookCover';
+import { Mascot } from './Mascot';
 import { PagePreview } from './PagePreview';
 import '../styles/landing.css';
 
@@ -143,6 +144,7 @@ export function Landing() {
           <div className="hero__book enter enter-2">
             <div className="hero__orbit" aria-hidden="true" />
             <EbookCover angle={-24} size="md" onOpen={() => setPreviewOpen(true)} />
+            <p className="book-bubble hero__bubble" aria-hidden="true">Escrevi esse guia pra sua empresa. Clica no livro!</p>
           </div>
         </div>
         <button type="button" className="scroll-cue" onClick={() => document.getElementById('problema')?.scrollIntoView({ behavior: 'smooth' })}>
@@ -340,6 +342,7 @@ export function Landing() {
       {/* 8 · Fechamento */}
       <section className="closing" aria-labelledby="closing-title">
         <div className="wrap closing__inner" data-reveal>
+          <Mascot className="closing__mascot" />
           <h2 id="closing-title">Sua próxima etapa começa com conhecimento.</h2>
           <button type="button" className="btn btn-primary btn-lg" onClick={owned ? buy : toEbook}>
             {owned ? 'Ler meu ebook' : `Quero o ebook por ${EBOOK.priceLabel}`}

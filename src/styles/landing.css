@@ -804,3 +804,27 @@
     animation: none;
   }
 }
+
+.hero__bubble {
+  right: max(0px, calc(50% - 250px));
+  top: 3%;
+}
+@media (max-width: 979px) {
+  .hero__bubble {
+    right: 6px;
+    top: -2%;
+    max-width: 190px;
+    font-size: 0.8125rem;
+  }
+}
+.showcase__stage {
+  position: relative;
+}
+.closing__mascot {
+  width: clamp(150px, 30vw, 220px);
+  margin-bottom: -8px;
+}
+.closing__mascot .mascot__img {
+  -webkit-mask-image: linear-gradient(#000 72%, transparent);
+  mask-image: linear-gradient(#000 72%, transparent);
+}

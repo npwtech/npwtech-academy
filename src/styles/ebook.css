@@ -69,9 +69,8 @@
   margin-left: calc(var(--bw) * -0.5);
   transform: translateZ(calc(var(--bd) * 0.5));
   display: grid;
-  grid-template-rows: auto auto 1fr auto auto;
-  align-content: start;
-  gap: calc(var(--bw) * 0.045);
+  grid-template-rows: auto auto auto auto 1fr auto;
+  gap: calc(var(--bw) * 0.04);
   padding: calc(var(--bw) * 0.085) calc(var(--bw) * 0.08) calc(var(--bw) * 0.075) calc(var(--bw) * 0.11);
   border-radius: 3px 10px 10px 3px;
   overflow: hidden;
@@ -108,6 +107,7 @@
 .book__top-row,
 .book__bottom-row {
   position: relative;
+  z-index: 2;
   display: flex;
   justify-content: space-between;
   gap: 8px;
@@ -118,9 +118,32 @@
   color: #8f8f94;
 }
 .book__bottom-row {
+  grid-row: 6;
   padding-top: calc(var(--bw) * 0.04);
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
   letter-spacing: 0.08em;
+  color: #c9c9cd;
+}
+/* O robô estampado na capa, saindo da borda de baixo */
+.book__robot {
+  position: absolute;
+  z-index: 1;
+  right: calc(var(--bw) * -0.1);
+  bottom: calc(var(--bw) * -0.02);
+  width: 76%;
+  height: auto;
+  filter: drop-shadow(-12px 10px 24px rgba(0, 0, 0, 0.7));
+}
+.book__front::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 30%;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(5, 5, 6, 0.92) 78%);
 }
 .book__bottom-row span:last-child {
   text-align: right;
@@ -135,7 +158,7 @@
 }
 .book__title {
   position: relative;
-  align-self: end;
+  z-index: 2;
   font-family: var(--font-display);
   font-weight: 700;
   font-size: calc(var(--bw) * 0.142);
@@ -159,16 +182,17 @@
 }
 .book__subtitle {
   position: relative;
-  max-width: 88%;
+  z-index: 2;
+  max-width: 50%;
   font-size: calc(var(--bw) * 0.043);
   line-height: 1.4;
   color: #a4a4a8;
 }
 .book__hex {
   position: absolute;
-  right: calc(var(--bw) * -0.16);
-  top: calc(var(--bw) * 0.2);
-  width: calc(var(--bw) * 0.72);
+  right: calc(var(--bw) * -0.22);
+  top: calc(var(--bw) * 0.5);
+  width: calc(var(--bw) * 0.9);
   aspect-ratio: 1;
   pointer-events: none;
   opacity: 0.55;
@@ -177,6 +201,7 @@
 }
 .book__glare {
   position: absolute;
+  z-index: 3;
   inset: 0;
   pointer-events: none;
   opacity: 0;
@@ -846,6 +871,66 @@
   .book,
   .book__shadow,
   .book__title {
+    animation: none;
+  }
+}
+
+/* Dica do robô */
+.eb-callout--tip .mascot--avatar {
+  width: 2.9em;
+  height: 2.9em;
+}
+.eb-callout__who {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.68em;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* O robô da capa "fala" por um balão que sai do livro */
+.book-bubble {
+  position: absolute;
+  z-index: 3;
+  max-width: 210px;
+  padding: 12px 16px;
+  border-radius: 18px;
+  background: var(--white);
+  color: var(--on-light);
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+  animation: bubble-pop 700ms var(--ease) 900ms both, bubble-bob 5s ease-in-out 1.6s infinite;
+}
+.book-bubble::after {
+  content: '';
+  position: absolute;
+  left: 26px;
+  bottom: -7px;
+  width: 16px;
+  height: 16px;
+  background: inherit;
+  border-radius: 3px;
+  transform: rotate(45deg);
+}
+@keyframes bubble-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.9);
+  }
+}
+@keyframes bubble-bob {
+  50% {
+    translate: 0 -5px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .book-bubble {
     animation: none;
   }
 }

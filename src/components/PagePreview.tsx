@@ -2,6 +2,7 @@ import { ArrowRight, X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { EBOOK, PREVIEW, TOC } from '../data/ebook';
 import { EbookBlocks } from './EbookBlocks';
+import { Mascot } from './Mascot';
 
 interface Props {
   open: boolean;
@@ -71,6 +72,7 @@ export function PagePreview({ open, onClose, onBuy }: Props) {
           </div>
 
           <footer className="preview__cta">
+            <Mascot variant="avatar" />
             <div>
               <strong>Gostou? O livro continua.</strong>
               <span>

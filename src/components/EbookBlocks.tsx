@@ -1,7 +1,8 @@
-import { Check, Lightbulb, TriangleAlert } from 'lucide-react';
+import { Check, TriangleAlert } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import type { Block } from '../data/ebook';
 import { ASSETS } from '../assets';
+import { Mascot } from './Mascot';
 import '../styles/ebook.css';
 
 // Renderiza o conteúdo do livro como elementos React (nunca como HTML cru),
@@ -83,7 +84,6 @@ function Exercise({ block }: { block: Extract<Block, { t: 'exercise' }> }) {
   );
 }
 
-const CALLOUT_ICON = { tip: Lightbulb, alert: TriangleAlert } as const;
 
 export function EbookBlock({ block }: { block: Block }) {
   switch (block.t) {
@@ -134,10 +134,21 @@ export function EbookBlock({ block }: { block: Block }) {
           </aside>
         );
       }
-      const Icon = CALLOUT_ICON[block.tone];
+      if (block.tone === 'tip') {
+        return (
+          <aside className="eb-callout eb-callout--tip">
+            <Mascot variant="avatar" />
+            <div>
+              <span className="eb-callout__who">Dica do robô</span>
+              <strong>{block.title}</strong>
+              <p>{rich(block.text)}</p>
+            </div>
+          </aside>
+        );
+      }
       return (
-        <aside className={`eb-callout eb-callout--${block.tone}`}>
-          <Icon aria-hidden="true" />
+        <aside className="eb-callout eb-callout--alert">
+          <TriangleAlert aria-hidden="true" />
           <div>
             <strong>{block.title}</strong>
             <p>{rich(block.text)}</p>
